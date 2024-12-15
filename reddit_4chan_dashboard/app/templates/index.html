@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Interactive Dashboard</h1>
+    <form id="plotForm">
+        <label for="db_url">Database URL:</label>
+        <input type="text" id="db_url" name="db_url" required><br><br>
+
+        <label for="x_param">X Parameter:</label>
+        <input type="text" id="x_param" name="x_param" required><br><br>
+
+        <label for="y_param">Y Parameter:</label>
+        <input type="text" id="y_param" name="y_param" required><br><br>
+
+        <button type="submit">Generate Plot</button>
+    </form>
+
+    <div id="plot"></div>
+
+    <script>
+        $("#plotForm").on("submit", function(event) {
+            event.preventDefault();
+
+            $.ajax({
+                url: "/plot",
+                method: "POST",
+                data: $(this).serialize(),
+                success: function(response) {
+                    $("#plot").html(response.plot_html);
+                },
+                error: function(err) {
+                    alert("Error generating plot.");
+                    console.log(err);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

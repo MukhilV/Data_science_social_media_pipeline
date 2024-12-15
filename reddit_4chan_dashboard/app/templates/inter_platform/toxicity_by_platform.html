@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}"> 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    {% include 'sidenav.html' %}
+    <div class = "content">
+        <h1>{{ title }}</h1>
+
+    <!-- Platform Selector Dropdown -->
+    <label for="platformSelect">Select Platform:</label>
+    <select id="platformSelect" onchange="updateChart()">
+        <option value="reddit">Reddit</option>
+        <option value="4chan">4chan</option>
+    </select>
+
+    <!-- Histogram -->
+    <canvas id="toxicityChart"></canvas>
+
+    <script>
+        // Data for Reddit and 4chan
+        const dataReddit = {{ data_reddit|tojson }};
+        const data4chan = {{ chan_data|tojson }};
+        
+        const ctx = document.getElementById("toxicityChart").getContext("2d");
+
+        // Convert data to chart-friendly format
+        const formatData = (data) => {
+            const labels = data.map(item => item[0]);
+            const counts = data.map(item => item[1]);
+            return { labels, counts };
+        };
+
+        let chartInstance;
+
+        // Render the chart
+        const renderChart = (platformData, platformName) => {
+            const { labels, counts } = formatData(platformData);
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Post Types in ${platformName}`,
+                        data: counts,
+                        backgroundColor: ["#3498db", "#2ecc71"],
+                        borderColor: ["#2980b9", "#27ae60"],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: "top"
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Toxicity Class"
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: "Post Count"
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        };
+
+        // Update chart based on dropdown selection
+        const updateChart = () => {
+            const selectedPlatform = document.getElementById("platformSelect").value;
+            if (selectedPlatform === "reddit") {
+                renderChart(dataReddit, "Reddit");
+            } else {
+                renderChart(data4chan, "4chan");
+            }
+        };
+
+        // Initialize the chart with Reddit data
+        renderChart(dataReddit, "Reddit");
+    </script>
+    </div>
+    <script src="{{ url_for('static', filename='dropdown.js') }}"></script>
+</body>
+</html>

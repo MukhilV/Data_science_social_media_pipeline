@@ -1,0 +1,106 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}"> 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+</head>
+<body>
+
+  {% include 'sidenav.html' %}
+
+
+<div class="content">
+  <h2>Welcome to the data visualization Dashboard of team SGM</h2>
+</div>
+
+<script src="{{ url_for('static', filename='dropdown.js') }}"></script>
+
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Data Visualization Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .hero {
+            background: linear-gradient(to bottom right, #4CAF50, #81C784);
+            color: white;
+            text-align: center;
+            padding: 100px 20px;
+        }
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        .hero p {
+            font-size: 1.5em;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .quick-links {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        .quick-links a {
+            text-decoration: none;
+            color: white;
+            background-color: #4CAF50;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .quick-links a:hover {
+            background-color: #45A049;
+        }
+    </style>
+</head>
+<body>
+    {% include 'sidenav.html' %}
+    
+    <div class = "content" >
+      <div class="hero">
+          <h1>Welcome to the Data Visualization Dashboard</h1>
+          <p>
+              This interactive platform allows you to explore and analyze data collected from Reddit and 4chan. 
+              Visualize trends, compare platforms, and uncover insights through engaging charts and plots.
+          </p>
+          <div class="quick-links">
+              <a href="/reddit/posts_per_subreddit">Reddit Dashboard</a>
+              <a href="/4chan/engagement_vs_toxicity">4chan Dashboard</a>
+              <a href="/inter_platform/toxicity_by_platform">Platform Comparison</a>
+          </div>
+      </div>
+      
+      <div class="main-content">
+          <h2>About This Project</h2>
+          <p>
+              Our project aims to provide a comprehensive analysis of data from Reddit and 4chan. Using advanced visualization 
+              techniques, we help users gain insights into trends, toxicity levels, and platform engagement. 
+              Built by Team SGM, this dashboard is your gateway to exploring social media dynamics.
+          </p>
+      </div>
+      
+      <script src="{{ url_for('static', filename='dropdown.js') }}"></script>
+  </div>
+</body>
+</html>
+

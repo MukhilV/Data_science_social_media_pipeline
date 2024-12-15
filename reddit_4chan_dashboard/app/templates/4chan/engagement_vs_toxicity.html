@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}"> 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    {% include 'sidenav.html' %}
+    <div class = "content">
+        <h1>{{ title }}</h1>
+
+        <!-- Engagement Level Slider -->
+        <label for="engagementLevel">Select minimum engagement level (replies):</label>
+        <input type="range" id="engagementLevel" min="0" max="1000" step="10" value = "0" oninput="updateSlider(this.value)">
+        <span id="sliderValue">0</span>
+
+        <!-- Scatter Plot -->
+        <canvas id="engagementToxicityChart"></canvas>
+
+        <script>
+            const chartData = {{ chart_data|tojson }};
+            const ctx = document.getElementById("engagementToxicityChart").getContext("2d");
+
+            // Parse replies_count for slider max dynamically
+            const maxEngagement = Math.max(...chartData.map(item => item.replies_count));
+            document.getElementById("engagementLevel").max = maxEngagement;
+
+            const sliderValue = document.getElementById("sliderValue");
+            const engagementLevel = document.getElementById("engagementLevel");
+
+            // Function to filter and update chart data based on slider
+            let scatterChart;
+            const renderChart = (minEngagement) => {
+                const filteredData = chartData.filter(item => item.replies_count >= minEngagement);
+
+                const labels = filteredData.map(item => item.post_number);
+                const points = filteredData.map(item => ({
+                    x: item.replies_count,
+                    y: item.toxic_score
+                }));
+
+                if (scatterChart) {
+                    scatterChart.destroy();
+                }
+
+                scatterChart = new Chart(ctx, {
+                    type: "scatter",
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: "Engagement vs Toxicity",
+                            data: points,
+                            backgroundColor: "rgba(255, 99, 132, 0.2)",
+                            borderColor: "rgba(255, 99, 132, 1)",
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: "top",
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `Post: ${labels[context.dataIndex]} | Engagement: ${context.raw.x} | Toxicity: ${context.raw.y}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: "linear",
+                                title: {
+                                    display: true,
+                                    text: "Engagement (Replies Count)"
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: "Toxicity Score"
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Update chart when slider changes
+            const updateSlider = (value) => {
+                sliderValue.textContent = value;
+                renderChart(parseInt(value, 10));
+            };
+
+            // Initialize chart with default slider value
+            renderChart(0);
+        </script>
+    </div>
+    <script src="{{ url_for('static', filename='dropdown.js') }}"></script>
+</body>
+</html>

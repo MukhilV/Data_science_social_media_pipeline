@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    {% include 'sidenav.html' %}
+
+    <div class="content">
+        <h1>{{ title }}</h1>
+        
+        <!-- Dropdown to select subreddit -->
+        <label for="subreddit">Choose a subreddit:</label>
+        <select id="subreddit">
+            <!-- Dynamically populate options -->
+        </select>
+
+        <!-- Date range slider -->
+        <label for="dateRange">Select date range:</label>
+        <input type="range" id="dateRange" min="0" max="100" step="1" oninput="updateDateRange(this.value)">
+        <span id="selectedDateRange"></span>
+
+        <!-- Chart -->
+        <canvas id="subredditChart"></canvas>
+
+        <script>
+            const chartData = {{ chart_data|tojson }};
+            const subreddits = [...new Set(chartData.map(item => item.subreddit))]; // Unique subreddits
+            const dates = [...new Set(chartData.map(item => item.date))].sort();   // Sorted unique dates
+
+            // Populate subreddit dropdown
+            const subredditSelect = document.getElementById("subreddit");
+            subreddits.forEach(sub => {
+                const option = document.createElement("option");
+                option.value = sub;
+                option.textContent = sub;
+                subredditSelect.appendChild(option);
+            });
+
+            // Update date range slider
+            const dateRangeSlider = document.getElementById("dateRange");
+            dateRangeSlider.min = 0;
+            dateRangeSlider.max = dates.length - 1;
+
+            const selectedDateRange = document.getElementById("selectedDateRange");
+            const updateDateRange = (value) => {
+                selectedDateRange.textContent = `${dates[0]} to ${dates[value]}`;
+                renderChart(dates[0], dates[value], subredditSelect.value);
+            };
+
+            // Render chart
+            const ctx = document.getElementById("subredditChart").getContext("2d");
+            let subredditChart;
+            const renderChart = (startDate, endDate, subreddit) => {
+                const filteredData = chartData.filter(item => 
+                    item.date >= startDate && item.date <= endDate && item.subreddit === subreddit
+                );
+
+                const labels = filteredData.map(item => item.date);
+                const counts = filteredData.map(item => item.count);
+
+                if (subredditChart) {
+                    subredditChart.destroy();
+                }
+
+                subredditChart = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `Posts in ${subreddit}`,
+                            data: counts,
+                            backgroundColor: "rgba(215, 203, 36, 0.6)",
+                            borderColor: "rgba(215, 203, 36, 1)",
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: "top",
+                            },
+                        },
+                    }
+                });
+            };
+
+            // Initialize chart with default values
+            updateDateRange(dates.length - 1);
+            subredditSelect.addEventListener("change", () => {
+                renderChart(dates[0], dates[dateRangeSlider.value], subredditSelect.value);
+            });
+        </script>
+    </div>
+    <script src="{{ url_for('static', filename='dropdown.js') }}"></script>
+</body>
+</html>

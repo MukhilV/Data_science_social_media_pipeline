@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.plot.ly/plotly-2.20.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+  
+  {% include 'sidenav.html' %}
+
+  <div class="content">
+      <h1>{{ title }}</h1>
+
+      <!-- Dropdown for selecting platform -->
+      <label for="platform-select">Choose a platform:</label>
+      <select id="platform-select">
+          <option value="reddit" selected>Reddit</option>
+          <option value="4chan">4chan</option>
+      </select>
+
+      <!-- Plotly chart container -->
+      <div id="chart" style="width: 100%; height: 500px;"></div>
+
+      <!-- Date range slider -->
+      <label for="date-range">Adjust Date Range:</label>
+      <input type="range" id="date-range" min="0" max="30" value="30" step="1" >
+
+      <script>
+          // Data passed from Flask
+          const redditData = {{ data_reddit | tojson }};
+          const chanData = {{ chan_data | tojson }};
+          
+          // Initialize chart with Reddit data
+          let currentPlatform = 'reddit';
+          let currentData = redditData;
+
+          // Helper to prepare data for Plotly
+          function preparePlotData(data) {
+              const dates = data.map(d => d.date);
+              const counts = data.map(d => d.count);
+
+              return [{
+                  x: dates,
+                  y: counts,
+                  type: 'scatter',
+                  mode: 'lines+markers',
+                  name: currentPlatform
+              }];
+          }
+
+          const currentDataDates = currentData.map(d=>d.date)
+          const currentDataCounts = currentData.map(d=>d.count)
+
+          // Initial plot
+          Plotly.newPlot('chart', preparePlotData(currentData), { title: 'Posts per Day' });
+
+          // Dropdown listener
+          document.getElementById('platform-select').addEventListener('change', (event) => {
+              currentPlatform = event.target.value;
+              currentData = currentPlatform === 'reddit' ? redditData : chanData;
+
+              // Update plot with new data
+              Plotly.react('chart', preparePlotData(currentData), { title: `Posts per Day - ${currentPlatform}` });
+          });
+
+          // Date range slider listener
+          const slider = document.getElementById('date-range');
+          slider.max = currentDataDates.length - 1;
+          slider.value = currentDataDates.length - 1;
+          slider.addEventListener('input', (event) => {
+
+              const days = parseInt(event.target.value);
+              const filteredData = currentData.slice(0, days); // Filter last 'days' entries
+
+              // Update plot with filtered data
+              Plotly.react('chart', preparePlotData(filteredData), { title: `Posts per Day - ${currentPlatform}` });
+
+              // const value = parseInt(slider.value);
+              // const filteredDates = dates.slice(0, value);
+              // const filteredCounts = counts.slice(0, value);
+          });
+      </script>
+  </div>
+  <script src="{{ url_for('static', filename='dropdown.js') }}"></script>
+</body>
+</html>
